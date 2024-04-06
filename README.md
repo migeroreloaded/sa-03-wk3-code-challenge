@@ -23,7 +23,7 @@ theater.
 1. Clone this repository using
 
     ```bash
-      git clone # code link
+      git clone git@github.com:migeroreloaded/sa-03-wk3-code-challenge.git
     ```
 
     or by downloading a ZIP file of the code.
