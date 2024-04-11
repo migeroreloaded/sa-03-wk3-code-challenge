@@ -10,6 +10,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const ticketNum = document.getElementById('ticket-num');
     const buyButton = document.getElementById('buy-ticket');
 
+    // Function to buy a ticket
+    function performTicketPurchase(film) {
+        // Parsing the available ticket number from the ticketNum element
+        let availableTickets = parseInt(ticketNum.textContent);
+        
+        console.log(`Bought ticket for film ${film.id} `);
+        // Checking if there are available tickets
+        if (availableTickets > 0) {
+            // Decreasing the available ticket count by one
+            availableTickets--;
+            film.tickets_sold++;
+            // Updating the displayed ticket number
+            ticketNum.textContent = availableTickets;
+            // Sending a PATCH request to update tickets_sold for the current film
+            fetch(`http://localhost:3000/films/${film.id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    tickets_sold: film.tickets_sold
+                })
+            })
+            .then(response => response.json())
+            .then(updatedFilm => {
+                // Updating the film object with the updated tickets_sold value
+                film.tickets_sold = updatedFilm.tickets_sold;
+                console.log('Ticket purchased successfully!');
+
+                // Update buy button based on availability
+                if (availableTickets === 0) {
+                    buyButton.textContent = 'Sold Out';
+                    buyButton.disabled = true;
+                }
+
+            })
+            .catch(error => console.error('Error purchasing ticket:', error));
+        } else {
+            // Alerting the user if there are no available tickets
+            alert('There are no available tickets for this film. Please try another film.');
+        }
+        console.log('End of process');
+    }
+
     // Fetch film data from the server
     fetch('http://localhost:3000/films')
     .then(response => response.json())
@@ -71,51 +115,17 @@ document.addEventListener('DOMContentLoaded', () => {
             buyButton.textContent = 'Sold Out';
             buyButton.disabled = true;
         }
-
-        // Adding an event listener to the buy button to execute buyTicket function with the current film
-        buyButton.removeEventListener('click', buyTicket); // Remove previous event listener
-        buyButton.addEventListener('click', () => buyTicket(film));
-    };
-
-    // Function to buy a ticket
-    function buyTicket(film) {
-        // Parsing the available ticket number from the ticketNum element
-        let availableTickets = parseInt(ticketNum.textContent);
-        // Checking if there are available tickets
-        if (availableTickets > 0) {
-            // Decreasing the available ticket count by one
-            availableTickets--;
-            // Updating the displayed ticket number
-            ticketNum.textContent = availableTickets;
-            // Sending a PATCH request to update tickets_sold for the current film
-            fetch(`http://localhost:3000/films/${film.id}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    tickets_sold: film.tickets_sold + 1
-                })
-            })
-            .then(response => response.json())
-            .then(updatedFilm => {
-                // Updating the film object with the updated tickets_sold value
-                film.tickets_sold = updatedFilm.tickets_sold;
-                console.log('Ticket purchased successfully!');
-
-                // Update buy button based on availability
-                if (availableTickets === 0) {
-                    buyButton.textContent = 'Sold Out';
-                    buyButton.disabled = true;
-                }
-
-            })
-            .catch(error => console.error('Error purchasing ticket:', error));
-        } else {
-            // Alerting the user if there are no available tickets
-            alert('There are no available tickets for this film. Please try another film.');
+        // Define a new function that calls `performTicketPurchase` for the given film
+        function handleBuyButtonClick() {
+            performTicketPurchase(film);
         }
-    }
+
+        // Adding an event listener to the buy button to execute performTicketPurchase function with the current film
+        buyButton.removeEventListener('click', handleBuyButtonClick); // Remove previous event listener
+        buyButton.addEventListener('click', handleBuyButtonClick);
+
+        console.log(`Film number ${film.id} has been selected`);
+    };
 
     // Function to delete a film
     function deleteFilm(filmId) {
