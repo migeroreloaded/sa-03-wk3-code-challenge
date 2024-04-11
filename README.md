@@ -48,8 +48,8 @@ theater.
 
 ## Technolgies used
 
-*
-*
+*JS
+*API
 
 ## Contact
 
